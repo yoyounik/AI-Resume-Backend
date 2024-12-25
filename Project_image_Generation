@@ -1,0 +1,491 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNk4/1SiCciw0jYDuXCbAKI",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/yoyounik/AI-Resume-Backend/blob/main/Project_image_Generation\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "3ncOhTqa1cDh"
+      },
+      "outputs": [],
+      "source": [
+        "import torch\n",
+        "import torch.nn as nn\n",
+        "import torch.optim as optim\n",
+        "import torchvision\n",
+        "import torchvision.transforms as transforms\n",
+        "import matplotlib.pyplot as plt\n",
+        "import numpy as np"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transforms.ToTensor())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pgqpkO1q6idj",
+        "outputId": "72d1a20f-9b80-4c67-906b-194094eff5ba"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz\n",
+            "Failed to download (trying next):\n",
+            "HTTP Error 403: Forbidden\n",
+            "\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz to ./data/MNIST/raw/train-images-idx3-ubyte.gz\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "100%|██████████| 9.91M/9.91M [00:00<00:00, 55.5MB/s]\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Extracting ./data/MNIST/raw/train-images-idx3-ubyte.gz to ./data/MNIST/raw\n",
+            "\n",
+            "Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz\n",
+            "Failed to download (trying next):\n",
+            "HTTP Error 403: Forbidden\n",
+            "\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz to ./data/MNIST/raw/train-labels-idx1-ubyte.gz\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "100%|██████████| 28.9k/28.9k [00:00<00:00, 2.02MB/s]"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Extracting ./data/MNIST/raw/train-labels-idx1-ubyte.gz to ./data/MNIST/raw\n",
+            "\n",
+            "Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Failed to download (trying next):\n",
+            "HTTP Error 403: Forbidden\n",
+            "\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw/t10k-images-idx3-ubyte.gz\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "100%|██████████| 1.65M/1.65M [00:00<00:00, 14.9MB/s]\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Extracting ./data/MNIST/raw/t10k-images-idx3-ubyte.gz to ./data/MNIST/raw\n",
+            "\n",
+            "Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz\n",
+            "Failed to download (trying next):\n",
+            "HTTP Error 403: Forbidden\n",
+            "\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz\n",
+            "Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "100%|██████████| 4.54k/4.54k [00:00<00:00, 4.18MB/s]"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Extracting ./data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ./data/MNIST/raw\n",
+            "\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "trainset[0]"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "s2fwxJG3KzEU",
+        "outputId": "0dd42198-a79b-4798-c49c-2f47fb785eef"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(tensor([[[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0118, 0.0706, 0.0706, 0.0706,\n",
+              "           0.4941, 0.5333, 0.6863, 0.1020, 0.6510, 1.0000, 0.9686, 0.4980,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.1176, 0.1412, 0.3686, 0.6039, 0.6667, 0.9922, 0.9922, 0.9922,\n",
+              "           0.9922, 0.9922, 0.8824, 0.6745, 0.9922, 0.9490, 0.7647, 0.2510,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1922,\n",
+              "           0.9333, 0.9922, 0.9922, 0.9922, 0.9922, 0.9922, 0.9922, 0.9922,\n",
+              "           0.9922, 0.9843, 0.3647, 0.3216, 0.3216, 0.2196, 0.1529, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0706,\n",
+              "           0.8588, 0.9922, 0.9922, 0.9922, 0.9922, 0.9922, 0.7765, 0.7137,\n",
+              "           0.9686, 0.9451, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.3137, 0.6118, 0.4196, 0.9922, 0.9922, 0.8039, 0.0431, 0.0000,\n",
+              "           0.1686, 0.6039, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0549, 0.0039, 0.6039, 0.9922, 0.3529, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.5451, 0.9922, 0.7451, 0.0078, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0431, 0.7451, 0.9922, 0.2745, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.1373, 0.9451, 0.8824, 0.6275,\n",
+              "           0.4235, 0.0039, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.3176, 0.9412, 0.9922,\n",
+              "           0.9922, 0.4667, 0.0980, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1765, 0.7294,\n",
+              "           0.9922, 0.9922, 0.5882, 0.1059, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0627,\n",
+              "           0.3647, 0.9882, 0.9922, 0.7333, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.9765, 0.9922, 0.9765, 0.2510, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1804, 0.5098,\n",
+              "           0.7176, 0.9922, 0.9922, 0.8118, 0.0078, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.1529, 0.5804, 0.8980, 0.9922,\n",
+              "           0.9922, 0.9922, 0.9804, 0.7137, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0941, 0.4471, 0.8667, 0.9922, 0.9922, 0.9922,\n",
+              "           0.9922, 0.7882, 0.3059, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0902, 0.2588, 0.8353, 0.9922, 0.9922, 0.9922, 0.9922, 0.7765,\n",
+              "           0.3176, 0.0078, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0706, 0.6706,\n",
+              "           0.8588, 0.9922, 0.9922, 0.9922, 0.9922, 0.7647, 0.3137, 0.0353,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.2157, 0.6745, 0.8863, 0.9922,\n",
+              "           0.9922, 0.9922, 0.9922, 0.9569, 0.5216, 0.0431, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.5333, 0.9922, 0.9922, 0.9922,\n",
+              "           0.8314, 0.5294, 0.5176, 0.0627, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000],\n",
+              "          [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,\n",
+              "           0.0000, 0.0000, 0.0000, 0.0000]]]),\n",
+              " 5)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "image,label = trainset[0]\n",
+        "print(image.shape)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6jcWAqHgMzAg",
+        "outputId": "a67608d8-7edc-4b4f-d736-dfd9d0d0c910"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "torch.Size([1, 28, 28])\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "len(trainset)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "W9n3PLBgPH42",
+        "outputId": "548abfb5-b2bf-4adc-99d6-a55ef6c764b7"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "60000"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)"
+      ],
+      "metadata": {
+        "id": "pafyUJczPZKT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class GenBlock(nn.Module):\n",
+        "  def __init__(self,in_features,out_features):\n",
+        "    super(GenBlock,self).__init__()\n",
+        "    self.main = nn.Sequential(\n",
+        "        nn.Linear(in_features,out_features),\n",
+        "        nn.ReLU(True)\n",
+        "    )\n",
+        "\n",
+        "    def forward(self,x):\n",
+        "      return self.main(x)"
+      ],
+      "metadata": {
+        "id": "a61ryYHzTItC"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class Generator(nn.Module):\n",
+        "  def __init__(self):\n",
+        "    super(Generator,self).__init__()\n",
+        "    self.main = nn.Sequential(\n",
+        "        GenBlock(100,256),\n",
+        "        GenBlock(256,512),\n",
+        "        GenBlock(512,1024),\n",
+        "        nn.Linear(1024,28*28),\n",
+        "        nn.Tanh()  #Tranforming the values in range of -1 and 1\n",
+        "    )\n",
+        "\n",
+        "  def forward(self,input):\n",
+        "    return self.main(input).view(-1,1,28,28)"
+      ],
+      "metadata": {
+        "id": "M_CUT_Qh2Ian"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class DisBlock(nn.Module):\n",
+        "  def __init__(self,in_features,out_features):\n",
+        "    super(DisBlock,self).__init__()\n",
+        "    self.main = nn.Sequential(\n",
+        "        nn.Linear(in_features,out_features),\n",
+        "        nn.LeakyReLU(0.2,inplace=True),\n",
+        "        nn.Dropout(0.2)\n",
+        "    )\n",
+        "\n",
+        "    def forward(self,x):\n",
+        "      return self.main(x)"
+      ],
+      "metadata": {
+        "id": "oVhvkgV1YQ-0"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class Discriminator(nn.Module):\n",
+        "  def __init__(self):\n",
+        "    super(Discriminator,self).__init__()\n",
+        "    self.main = nn.Sequential(\n",
+        "        DisBlock(28*28,1024),\n",
+        "        DisBlock(1024,512),\n",
+        "        DisBlock(512,256),\n",
+        "        nn.Linear(256,1),\n",
+        "        nn.Sigmoid()\n",
+        "    )\n",
+        "\n",
+        "    def forward(self,input):\n",
+        "      return self.main(input).view(-1,28,28)"
+      ],
+      "metadata": {
+        "id": "C1QAS3v_lHlM"
+      },
+      "execution_count": 7,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "generator = Generator()\n",
+        "discriminator = Discriminator()\n",
+        "\n",
+        "criterion = nn.BCELoss()\n",
+        "OptimizerD = optim.Adam(discriminator.parameters(),lr=0.0002)\n",
+        "OptimizerG = optim.Adam(generator.parameters(),lr=0.0002)"
+      ],
+      "metadata": {
+        "id": "M47I-SnsqPWu"
+      },
+      "execution_count": 8,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Setting up the parmaters and preparing the data\n",
+        "num_epochs = 50\n",
+        "fixed_noise = torch.randn(64,100)\n",
+        "\n",
+        "for epoch in range(num_epochs):\n",
+        ""
+      ],
+      "metadata": {
+        "id": "ZjSy53AiuV9v"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
